@@ -87,8 +87,8 @@ new g_maplimit
 
 public plugin_precache()
 {
-	cvar_dropteam = register_cvar("zp_armor_dropteam","5")	
-	cvar_pickupteam = register_cvar("zp_armor_pikupteam","5")	
+	cvar_dropteam = register_cvar("zp_armor_dropteam","Classic Zombie")	
+	cvar_pickupteam = register_cvar("zp_armor_pikupteam","Zombie|Human")	
 	cvar_item_roundlimit_player = register_cvar("zp_armor_roundlimit","5")	
 	cvar_item_roundlimit_global = register_cvar("zp_armor_roundlimit_g","10")
 	cvar_item_maplimit = register_cvar("zp_armor_maplimit","50")	
