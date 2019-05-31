@@ -33,7 +33,7 @@ new const AUTHOR[] = "Furion";
  [global vars]
 =================================================================================*/
 // Class ID
-new g_item_id;
+new g_item_id/*,g_item_id_spec*/;
 new const g_item_name[] = "Armor";
 new g_maxplayers;
 new bool: g_roundlive = false
@@ -46,9 +46,9 @@ new gGMsgItemPickup;
 
 //new const g_item_useteam[] = "Human" //same with register extra item!! its for use picked  entity
 //new const g_item_freeteam[] = "Classic"			//real names need from zpsp_zombieclasses not use Zombie here:D
-new const g_item_dropteam[] = "Classic Zombie,Raptor Zombie,Big Zombie,Poison Zombie,Leech Zombie"
-new const g_item_pickupteam[] = "Team Zombie,Team Human"
-new const g_item_useteam[] = "Team Human"
+//new const g_item_dropteam[] = "Classic Zombie,Raptor Zombie,Big Zombie,Poison Zombie,Leech Zombie"
+//new const g_item_pickupteam[] = "Team Zombie,Team Human"
+//new const g_item_useteam[] = "Team Human"
 
 new const gEntClassname[ ] = "armor_entity";
 //precaches
@@ -71,10 +71,12 @@ new Float:gHudyPos = 0.250;
 const g_max_value = 100;
 
 //cvars
+new cvar_dropteam,cvar_pickupteam,cvar_useteam
 new cvar_item_use,cvar_item_drop
 new cvar_item_roundlimit_player,cvar_item_roundlimit_global,cvar_item_maplimit;
 new cvar_icon,cvar_hud,cvar_sound;
 
+static g_item_dropteam[128],g_item_pickupteam[128],g_item_useteam[128]
 new	g_pcvar_item_drop,g_pcvar_item_use 
 new g_pcvar_item_roundlimit_player,g_pcvar_item_roundlimit_global,g_pcvar_item_maplimit;
 new g_pcvar_icon,g_pcvar_hud,g_pcvar_sound;
@@ -100,8 +102,10 @@ new Float:db_time[MAX_TEMP_SAVE]
 
 public plugin_precache()
 {
-	//cvar_dropteam = register_cvar("zp_armor_dropteam","Classic Zombie")	;
-	//cvar_pickupteam = register_cvar("zp_armor_pickupteam","Zombie|Human")	;
+	cvar_dropteam = register_cvar("zp_armor_dropteam","Big Zombie")	;
+	cvar_pickupteam = register_cvar("zp_armor_pickupteam","Team Zombie,Team Human")	;
+	cvar_useteam = register_cvar("zp_armor_useteam","Team Human")	;	
+	
 	cvar_item_drop = register_cvar("zp_armor_drop","1"); 
 	cvar_item_use = register_cvar("zp_armor_use","1");  //-1 nobuy from menu 0- cant use picked 1 all enable
 	cvar_item_roundlimit_player = register_cvar("zp_armor_roundlimit","5")	;
@@ -120,8 +124,9 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_clcmd("say /armor", "cmdUse",_,"")  
 	register_clcmd("say armor", "cmdUseHelp",_,"") 		
-	//get_pcvar_string(cvar_dropteam,g_item_dropteam,charsmax(g_item_dropteam));
-	//get_pcvar_string(cvar_pickupteam,g_item_pickupteam,charsmax(g_item_pickupteam));
+	get_pcvar_string(cvar_dropteam,g_item_dropteam,charsmax(g_item_dropteam));
+	get_pcvar_string(cvar_pickupteam,g_item_pickupteam,charsmax(g_item_pickupteam));
+	get_pcvar_string(cvar_useteam,g_item_useteam,charsmax(g_item_useteam));
 	g_pcvar_item_drop = get_pcvar_num(cvar_item_drop)		
 	g_pcvar_item_use = get_pcvar_num(cvar_item_use)	
 	g_pcvar_item_roundlimit_player = get_pcvar_num(cvar_item_roundlimit_player);
@@ -136,6 +141,7 @@ public plugin_init()
 	//gGMsgStatusIcon = get_user_msgid("StatusIcon")
 	g_maxplayers = get_maxplayers()	;
 	g_item_id = zp_register_extra_item(g_item_name, 20, ZP_TEAM_HUMAN);
+	//g_item_id_spec = zpsp_register_extra_item(g_item_name, 20, ZP_TEAM_HUMAN);	
 	register_forward( FM_Touch, "forward_FM_Touch" );	
 }
 public plugin_cfg()
@@ -330,9 +336,7 @@ public event_death()
 	{
 		zp_get_special_class_name(victim, iCast, charsmax(iCast)) ;
 	}
-#if defined DEBUG	
-	log_amx("dropteam: %s cast: %s",g_item_dropteam	, iCast)
-#endif
+
 	if (
 	(containi(g_item_dropteam	, iCast) > -1)  ||
 	((containi(g_item_dropteam,"Last Human") > -1) && (g_lasthuman[victim] == true))||
@@ -342,7 +346,9 @@ public event_death()
 	((containi(g_item_dropteam,"Team Human") >-1) && (!zp_get_user_zombie(victim) && !zp_get_human_special_class(victim) ))	
 	) 
 	{
-	
+#if defined DEBUG	
+		log_amx("dropteam: %s cast: %s 				||SUCCESS",g_item_dropteam	, iCast)
+#endif	
 		new ran = random_num(0,1);
 		if (ran == 1)
 		{
@@ -369,6 +375,13 @@ public event_death()
 		
 		}
 	}
+#if defined DEBUG	
+	else{
+	
+		log_amx("dropteam: %s cast: %s ",g_item_dropteam	, iCast)
+		
+	}
+#endif	
 	return PLUGIN_HANDLED;	
 }
 
@@ -629,4 +642,5 @@ save_stats(id)
 		}
 	}
 }	
+
 
